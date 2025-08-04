@@ -185,7 +185,7 @@ services:
     expose:
       - 3030/tcp
     environment: &langfuse-worker-env
-      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5436/postgres # Local AI PostgreSQL on port 5436 (See docker-compose.override.private.yml)
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/langfuse
       SALT: ${LANGFUSE_SALT}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
       TELEMETRY_ENABLED: ${TELEMETRY_ENABLED:-true}
@@ -300,7 +300,7 @@ services:
       timeout: 3s
       retries: 10
     expose:
-      - 5436/tcp
+      - 5432/tcp
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
