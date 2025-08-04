@@ -33,8 +33,8 @@ services:
   clickhouse:
     ports:
       - 127.0.0.1:8123:8123
-      - 127.0.0.1:9000:9000
-      - 127.0.0.1:9009:9009
+      - 127.0.0.1:9002:9000
+      - 127.0.0.1:9003:9009
 
   minio:
     ports:
@@ -43,11 +43,11 @@ services:
 
   postgres:
     ports:
-      - 127.0.0.1:5433:5432                
+      - 127.0.0.1:5436:5432 # Local AI PostgreSQL on port 5436
 
   redis:
     ports:
-      - 127.0.0.1:6379:6379
+      - 127.0.0.1:6879:6379
 
   searxng:
     ports:
@@ -60,7 +60,7 @@ services:
   ollama-gpu:
     ports:
       - 127.0.0.1:11434:11434
-      
+
   ollama-gpu-amd:
     ports:
       - 127.0.0.1:11434:11434

@@ -19,7 +19,7 @@ x-n8n: &service-n8n
   image: n8nio/n8n:latest
   environment:
     - DB_TYPE=postgresdb
-    - DB_POSTGRESDB_HOST=db
+    - DB_POSTGRESDB_HOST=postgres
     - DB_POSTGRESDB_USER=postgres
     - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
     - DB_POSTGRESDB_DATABASE=postgres
@@ -50,8 +50,8 @@ x-init-ollama: &init-ollama
     - ollama_storage:/root/.ollama
   entrypoint: /bin/sh
   command:
-    - "-c"
-    - "sleep 3; OLLAMA_HOST=ollama:11434 ollama pull qwen2.5:7b-instruct-q4_K_M; OLLAMA_HOST=ollama:11434 ollama pull nomic-embed-text"
+    - '-c'
+    - 'sleep 3; OLLAMA_HOST=host.docker.internal:11434 ollama pull qwen2.5:7b-instruct-q4_K_M; OLLAMA_HOST=ollama:11434 ollama pull nomic-embed-text'
 
 services:
   flowise:
@@ -61,13 +61,13 @@ services:
     expose:
       - 3001/tcp
     environment:
-        - PORT=3001
-        - FLOWISE_USERNAME=${FLOWISE_USERNAME}
-        - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
+      - PORT=3001
+      - FLOWISE_USERNAME=${FLOWISE_USERNAME}
+      - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     volumes:
-        - ~/.flowise:/root/.flowise
+      - ~/.flowise:/root/.flowise
     entrypoint: /bin/sh -c "sleep 3; flowise start"
 
   open-webui:
@@ -77,7 +77,7 @@ services:
     expose:
       - 8080/tcp
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - 'host.docker.internal:host-gateway'
     volumes:
       - open-webui:/app/backend/data
 
@@ -86,10 +86,13 @@ services:
     container_name: n8n-import
     entrypoint: /bin/sh
     command:
-      - "-c"
-      - "n8n import:credentials --separate --input=/backup/credentials && n8n import:workflow --separate --input=/backup/workflows"
+      - '-c'
+      - 'n8n import:credentials --separate --input=/backup/credentials && n8n import:workflow --separate --input=/backup/workflows'
     volumes:
       - ./n8n/backup:/backup
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   n8n:
     <<: *service-n8n
@@ -118,16 +121,16 @@ services:
   neo4j:
     image: neo4j:latest
     volumes:
-        - ./neo4j/logs:/logs
-        - ./neo4j/config:/config
-        - ./neo4j/data:/data
-        - ./neo4j/plugins:/plugins
+      - ./neo4j/logs:/logs
+      - ./neo4j/config:/config
+      - ./neo4j/data:/data
+      - ./neo4j/plugins:/plugins
     expose:
       - 7473/tcp
       - 7474/tcp
       - 7687/tcp
     environment:
-        - NEO4J_AUTH=${NEO4J_AUTH:-"neo4j/your_password"}
+      - NEO4J_AUTH=${NEO4J_AUTH:-"neo4j/your_password"}
     restart: always
 
   caddy:
@@ -162,10 +165,10 @@ services:
     cap_add:
       - NET_BIND_SERVICE
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "1m"
-        max-file: "1"
+        max-size: '1m'
+        max-file: '1'
 
   langfuse-worker:
     image: langfuse/langfuse-worker:3
@@ -180,9 +183,9 @@ services:
       clickhouse:
         condition: service_healthy
     expose:
-     - 3030/tcp
+      - 3030/tcp
     environment: &langfuse-worker-env
-      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5436/postgres # Local AI PostgreSQL on port 5436 (See docker-compose.override.private.yml)
       SALT: ${LANGFUSE_SALT}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
       TELEMETRY_ENABLED: ${TELEMETRY_ENABLED:-true}
@@ -248,7 +251,7 @@ services:
   clickhouse:
     image: clickhouse/clickhouse-server
     restart: always
-    user: "101:101"
+    user: '101:101'
     expose:
       - 8123/tcp
       - 9000/tcp
@@ -282,7 +285,7 @@ services:
     volumes:
       - langfuse_minio_data:/data
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: ['CMD', 'mc', 'ready', 'local']
       interval: 1s
       timeout: 5s
       retries: 5
@@ -292,12 +295,12 @@ services:
     image: postgres:${POSTGRES_VERSION:-latest}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 3s
       timeout: 3s
       retries: 10
     expose:
-      - 5432/tcp
+      - 5436/tcp
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -321,12 +324,12 @@ services:
       - SETUID
       - DAC_OVERRIDE
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "1m"
-        max-file: "1"
+        max-size: '1m'
+        max-file: '1'
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 3s
       timeout: 10s
       retries: 10
@@ -350,17 +353,17 @@ services:
       - SETGID
       - SETUID
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "1m"
-        max-file: "1"
+        max-size: '1m'
+        max-file: '1'
 
   ollama-cpu:
-    profiles: ["cpu"]
+    profiles: ['cpu']
     <<: *service-ollama
 
   ollama-gpu:
-    profiles: ["gpu-nvidia"]
+    profiles: ['gpu-nvidia']
     <<: *service-ollama
     deploy:
       resources:
@@ -371,21 +374,21 @@ services:
               capabilities: [gpu]
 
   ollama-gpu-amd:
-    profiles: ["gpu-amd"]
+    profiles: ['gpu-amd']
     <<: *service-ollama
     image: ollama/ollama:rocm
     devices:
-      - "/dev/kfd"
-      - "/dev/dri"
+      - '/dev/kfd'
+      - '/dev/dri'
 
   ollama-pull-llama-cpu:
-    profiles: ["cpu"]
+    profiles: ['cpu']
     <<: *init-ollama
     depends_on:
       - ollama-cpu
 
   ollama-pull-llama-gpu:
-    profiles: ["gpu-nvidia"]
+    profiles: ['gpu-nvidia']
     <<: *init-ollama
     depends_on:
       - ollama-gpu
@@ -395,4 +398,4 @@ services:
     <<: *init-ollama
     image: ollama/ollama:rocm
     depends_on:
-     - ollama-gpu-amd
+      - ollama-gpu-amd
