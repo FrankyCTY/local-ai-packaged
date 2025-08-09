@@ -1,3 +1,13 @@
+# More Resources
+- Agent Templates: https://github.com/coleam00/ottomator-agents/tree/main
+
+## n8n
+https://n8n.io/workflows/
+
+## OpenwebUI functions (e.g. Pipe, Filter, Action)
+https://openwebui.com/functions
+
+
 # Self-hosted AI Package
 
 **Self-hosted AI Package** is an open, docker compose template that
